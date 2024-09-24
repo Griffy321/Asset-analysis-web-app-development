@@ -22,7 +22,7 @@ end_date_str = end_date.strftime('%Y-%m-%d')
 aggs = cast(
     HTTPResponse,
     client.get_aggs(
-        'META',  
+        'NVDA',  
         1,
         'minute',
         start_date_str,
@@ -66,8 +66,11 @@ dataFrame = pd.DataFrame(data, index=dates)
 # Calculate returns (percentage change in closing prices)
 dataFrame['Returns'] = dataFrame['Close'].pct_change()
 
+# Calculate rolling volatility (standard deviation of returns)
+dataFrame['Volatility'] = dataFrame['Returns'].rolling(window=30).std()
+
 # Create a figure and subplots
-fig, ax = plt.subplots(3, 1, figsize=(14, 10), sharex=True)
+fig, ax = plt.subplots(4, 1, figsize=(14, 12), sharex=True)
 
 # 1. Plot the line chart for the closing prices
 ax[0].set_title('NVDA Line Chart - Closing Prices')
@@ -88,6 +91,12 @@ ax[2].bar(dataFrame.index, dataFrame['Volume'], width=0.0005, label='Volume', co
 ax[2].set_title('Volume over Time')
 ax[2].set_ylabel('Volume')
 ax[2].legend()
+
+# 4. Plot the volatility data
+ax[3].plot(dataFrame.index, dataFrame['Volatility'], label='Rolling Volatility (30-minute window)', color='green')
+ax[3].set_title('Volatility over Time')
+ax[3].set_ylabel('Volatility')
+ax[3].legend()
 
 # Format the x-axis for better readability (time)
 plt.tight_layout()
